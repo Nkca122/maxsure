@@ -20,10 +20,22 @@ app.get("/protected", authenticateJwt, (req, res) => {
   res.json({ message: "You are authorized", user: req.user });
 });
 
+app.use((err, req, res, next) => {
+  if (err) {
+    console.log(err);
+    res.json({
+      msg: err,
+    });
+  }
+});
+
 // Connect to MongoDB and start server
-mongoose.connect(process.env.MONGO_URI).then(() => {
-  app.listen(3000, () => console.log("Server running on port 3000"));
-}).catch((err)=>{
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
+    app.listen(3000, () => console.log("Server running on port 3000"));
+  })
+  .catch((err) => {
     console.log(err);
     process.exit(-1);
-});
+  });

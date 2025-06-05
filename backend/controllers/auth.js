@@ -7,7 +7,7 @@ require("dotenv").config();
 module.exports = [
   {
     method: "post",
-    route: "/api/signup",
+    route: "/signup",
     fn: wrapAsync(async (req, res) => {
       const { email, password } = req.body;
       const hash = await bcrypt.hash(password, 10);
@@ -25,7 +25,7 @@ module.exports = [
 
   {
     method: "post",
-    route: "/api/login",
+    route: "/login",
     fn: wrapAsync(async (req, res) => {
       const { email, password } = req.body;
       const user = await User.findOne({ email });
@@ -43,7 +43,7 @@ module.exports = [
       res.json({
         token: jwt.sign(
           {
-            sub: user._id,
+            id: user._id,
           }, process.env.JWT_SECRET,{ expiresIn: "1d"}
         ),
       });
