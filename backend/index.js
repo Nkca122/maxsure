@@ -1,17 +1,29 @@
-const TelegramBot = require("node-telegram-bot-api");
+const express = require("express");
+const mongoose = require("mongoose");
+const passport = require("passport");
+const dotenv = require("dotenv");
+dotenv.config();
 
-// Replace with your actual bot token
-const token = "8174297917:AAGYJi7sid1Y_c3bVqWaCF8yCemf40fWwkw";
+const app = express();
+app.use(express.json());
 
-// Create a bot that uses 'polling' to fetch new updates
-const bot = new TelegramBot(token, { polling: true });
+// Passport config
+require("./config/passport")(passport);
+app.use(passport.initialize());
 
-bot.on("message", (msg) => {
-  const chatId = msg.chat.id;
+// Routes
+app.use("/auth", require("./routes/auth"));
 
-  if (msg.text && msg.text.toLowerCase().includes("marco")) {
-    bot.sendMessage(chatId, "Polo!!");
-  }
+// Protected route
+const authenticateJwt = require("./middlewares/authMiddleware");
+app.get("/protected", authenticateJwt, (req, res) => {
+  res.json({ message: "You are authorized", user: req.user });
 });
 
-console.log("Bot is running using polling...");
+// Connect to MongoDB and start server
+mongoose.connect(process.env.MONGO_URI).then(() => {
+  app.listen(3000, () => console.log("Server running on port 3000"));
+}).catch((err)=>{
+    console.log(err);
+    process.exit(-1);
+});
