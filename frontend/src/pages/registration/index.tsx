@@ -8,16 +8,19 @@ import { z } from "zod";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Eye, EyeClosed } from "lucide-react";
+
+import axios from "axios";
 
 const signupFormSchema = z
   .object({
@@ -34,13 +37,24 @@ const signupFormSchema = z
     message: "Passwords do not match",
   });
 
+const loginFormSchema = z.object({
+  email: z.string().email({
+    message: "Enter a valid email id",
+  }),
+  password: z.string().min(8, {
+    message: "The password must be 8 characters long",
+  }),
+});
+
 export default function Registration() {
   const location = useLocation();
   const { method } = location.state || {
     method: "login",
   };
 
+  const Navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(method);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const signupForm = useForm<z.infer<typeof signupFormSchema>>({
     resolver: zodResolver(signupFormSchema),
@@ -51,8 +65,50 @@ export default function Registration() {
     },
   });
 
-  const signupSubmitfn = (values: z.infer<typeof signupFormSchema>) => {
-    console.log(values);
+  const signupSubmitfn = async (values: z.infer<typeof signupFormSchema>) => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/auth/signup`,
+        {
+          email: values.email,
+          password: values.password,
+        }
+      );
+
+      if (response.status == 201) Navigate(response.data.redirectTo);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const loginForm = useForm<z.infer<typeof loginFormSchema>>({
+    resolver: zodResolver(loginFormSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const loginSubmitfn = async (values: z.infer<typeof loginFormSchema>) => {
+    console.log(`${import.meta.env.VITE_BACKEND_URL}/auth/login`);
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/auth/login`,
+        {
+          email: values.email,
+          password: values.password,
+        }
+      );
+
+      console.log(response);
+      if (response.status == 200) {
+        const { token, redirectTo } = response.data;
+        localStorage.setItem("token", token);
+        Navigate(redirectTo);
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -63,7 +119,6 @@ export default function Registration() {
             <Tabs
               defaultValue={method}
               onValueChange={(e) => {
-                console.log(e);
                 setActiveTab(e);
               }}
             >
@@ -72,13 +127,77 @@ export default function Registration() {
                 <TabsTrigger value="signup">Sign up</TabsTrigger>
               </TabsList>
               <TabsContent value="login">
-                Make changes to your account here.
+                <Form {...loginForm}>
+                  <form
+                    onSubmit={loginForm.handleSubmit(loginSubmitfn)}
+                    className="space-y-8"
+                    autoComplete="off"
+                    autoFocus={false}
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                  >
+                    <FormField
+                      control={loginForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input placeholder="example@email.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={loginForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input
+                                placeholder=""
+                                {...field}
+                                type={isPasswordVisible ? "text" : "password"}
+                              />
+                              <div className="absolute top-0 right-0 z-10">
+                                <Button
+                                  className=""
+                                  variant={"outline"}
+                                  type="button"
+                                  onMouseDown={() => {
+                                    setIsPasswordVisible(true);
+                                  }}
+                                  onMouseUp={() => {
+                                    setIsPasswordVisible(false);
+                                  }}
+                                >
+                                  {isPasswordVisible ? <EyeClosed /> : <Eye />}
+                                </Button>
+                              </div>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <Button type="submit">Submit</Button>
+                  </form>
+                </Form>
               </TabsContent>
               <TabsContent value="signup">
                 <Form {...signupForm}>
                   <form
                     onSubmit={signupForm.handleSubmit(signupSubmitfn)}
                     className="space-y-8"
+                    autoComplete="off"
+                    autoFocus={false}
+                    autoCapitalize="off"
+                    autoCorrect="off"
                   >
                     <FormField
                       control={signupForm.control}
@@ -101,7 +220,28 @@ export default function Registration() {
                         <FormItem>
                           <FormLabel>Password</FormLabel>
                           <FormControl>
-                            <Input placeholder="" {...field} />
+                            <div className="relative">
+                              <Input
+                                placeholder=""
+                                {...field}
+                                type={isPasswordVisible ? "text" : "password"}
+                              />
+                              <div className="absolute top-0 right-0 z-10">
+                                <Button
+                                  className=""
+                                  variant={"outline"}
+                                  type="button"
+                                  onMouseDown={() => {
+                                    setIsPasswordVisible(true);
+                                  }}
+                                  onMouseUp={() => {
+                                    setIsPasswordVisible(false);
+                                  }}
+                                >
+                                  {isPasswordVisible ? <EyeClosed /> : <Eye />}
+                                </Button>
+                              </div>
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -115,7 +255,11 @@ export default function Registration() {
                         <FormItem>
                           <FormLabel>Re-enter Password</FormLabel>
                           <FormControl>
-                            <Input placeholder="" {...field} />
+                            <Input
+                              placeholder=""
+                              {...field}
+                              type={isPasswordVisible ? "text" : "password"}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

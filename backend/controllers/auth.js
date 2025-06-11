@@ -10,16 +10,26 @@ module.exports = [
     route: "/signup",
     fn: wrapAsync(async (req, res) => {
       const { email, password } = req.body;
-      const hash = await bcrypt.hash(password, 10);
+      const existingUser = await User.findOne({ email });
+      if (existingUser)
+        return res.json({
+          msg: "User already exists",
+          user: existingUser,
+        });
 
+      const hash = await bcrypt.hash(password, 10);
       const user = new User({
         email: email,
         password: hash,
       });
 
       await user.save();
-      res.json({});
+      res.status(201).json({
+        msg: "User created",
+        redirectTo: "/",
+      });
     }),
+
     middlewares: [],
   },
 
@@ -32,7 +42,7 @@ module.exports = [
 
       if (!user)
         return res.status(400).json({
-          msg: "Invalid credentials",
+          msg: "Invalid credentials",   
         });
 
       if (!(await bcrypt.compare(password, user.password)))
@@ -40,12 +50,15 @@ module.exports = [
           msg: "Invalid credentials",
         });
 
-      res.json({
+      res.status(200).json({
         token: jwt.sign(
           {
             id: user._id,
-          }, process.env.JWT_SECRET,{ expiresIn: "1d"}
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: "1d" }
         ),
+        redirectTo: "/dashboard"
       });
     }),
     middlewares: [],
