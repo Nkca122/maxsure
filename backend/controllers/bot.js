@@ -86,4 +86,13 @@ module.exports = [
     }),
     middlewares: [],
   },
+  {
+    method: "post",
+    route: "/webhook",
+    fn: wrapAsync(async (req, res) => {
+      console.log(req.body)
+      res.end("ok")
+    }),
+    middlewares: [],
+  },
 ];

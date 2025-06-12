@@ -1,4 +1,5 @@
 import Header from "@/components/header";
+import Footer from "@/components/footer";
 import { Outlet } from "react-router-dom";
 
 import { ThemeProvider } from "@/components/theme-provider";
@@ -16,7 +17,7 @@ export default function Layout() {
           <main className="min-h-full">
             <Outlet />
           </main>
-          <p>footer</p>
+          <Footer />
           <div className="fixed z-10 bottom-4 right-4 flex gap-2">
             <Badge variant={"outline"}>
               <Link to="/register" state={{
