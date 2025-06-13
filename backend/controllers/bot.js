@@ -90,8 +90,9 @@ module.exports = [
     method: "post",
     route: "/webhook",
     fn: wrapAsync(async (req, res) => {
+      console.log(req.headers['content-type']);
       console.log(req.body)
-      res.end("ok")
+      res.end("ok");
     }),
     middlewares: [],
   },

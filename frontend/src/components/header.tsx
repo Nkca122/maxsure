@@ -52,13 +52,11 @@ export default function Header() {
             <div className="flex">
               {menu_links.map((menu_link) => {
                 return (
-                  <>
-                    <NavigationMenuItem key={menu_link.to}>
-                      <NavigationMenuLink>
-                        <Link to={menu_link.to}>{menu_link.display}</Link>
-                      </NavigationMenuLink>
-                    </NavigationMenuItem>
-                  </>
+                  <NavigationMenuItem key={menu_link.to}>
+                    <NavigationMenuLink href={menu_link.to}>
+                      {menu_link.display}
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
                 );
               })}
             </div>
@@ -70,11 +68,9 @@ export default function Header() {
             <DropdownMenuContent>
               {menu_links.map((menu_link) => {
                 return (
-                  <>
-                    <DropdownMenuItem key={menu_link.to}>
-                      <Link to={menu_link.to}>{menu_link.display}</Link>
-                    </DropdownMenuItem>
-                  </>
+                  <DropdownMenuItem key={menu_link.to}>
+                    <Link to={menu_link.to}>{menu_link.display}</Link>
+                  </DropdownMenuItem>
                 );
               })}
             </DropdownMenuContent>

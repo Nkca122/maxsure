@@ -6,7 +6,7 @@ export default function Home() {
       <section
         className="w-screen h-screen flex flex-col justify-center items-center gap-3 bg-center bg-cover"
         style={{
-          backgroundImage: "url(/assets/hero_bg.png)",
+          backgroundImage: "url(/assets/hero_bg.png)", 
         }}
       >
         <h1 className="font-bold text-4xl leading-snug text-transparent bg-clip-text bg-gradient-to-r from-gray-400 dark:from-gray-300 via-black dark:via-white to-gray-400 dark:to-gray-300 text-center">
