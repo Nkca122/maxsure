@@ -12,9 +12,8 @@ module.exports = [
       const { email, password } = req.body;
       const existingUser = await User.findOne({ email });
       if (existingUser)
-        return res.json({
+        return res.status(409).json({
           msg: "User already exists",
-          user: existingUser,
         });
 
       const hash = await bcrypt.hash(password, 10);
@@ -42,7 +41,7 @@ module.exports = [
 
       if (!user)
         return res.status(400).json({
-          msg: "Invalid credentials",   
+          msg: "Invalid credentials",
         });
 
       if (!(await bcrypt.compare(password, user.password)))
@@ -58,7 +57,7 @@ module.exports = [
           process.env.JWT_SECRET,
           { expiresIn: "1d" }
         ),
-        redirectTo: "/dashboard"
+        redirectTo: "/dashboard",
       });
     }),
     middlewares: [],
