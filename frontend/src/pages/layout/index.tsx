@@ -34,9 +34,9 @@ export default function Layout() {
               </Link>
             </Badge>
           </div>
-          {/* <div className="fixed z-10 bottom-4 left-4">
+          <div className="fixed z-10 bottom-4 left-4">
             <ModeToggle />
-          </div> */}
+          </div>
         </div>
       </ThemeProvider>
     </>

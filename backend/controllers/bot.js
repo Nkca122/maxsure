@@ -1,35 +1,28 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
+const Report = require("../models/report");
 const wrapAsync = require("../utils/wrapper");
 const jwt = require("jsonwebtoken");
 const authMiddleware = require("../middlewares/authMiddleware");
+const {default: axiosRetry} = require("axios-retry");
 const axios = require("axios");
 require("dotenv").config();
 
-// app.post("/new-message", async (req, res) => {
-//   const { message } = req.body;
-//   console.log("Received:", message);
+const TelegramAxiosClient = axios.create({
+  baseURL: process.env.TELEGRAM_URL,
+  timeout: 5000,
+});
 
-//   if (
-//     !message ||
-//     !message.text ||
-//     message.text.toLowerCase().indexOf("marco") < 0
-//   ) {
-//     return res.end();
-//   }
-
-//   try {
-//     await axios.post(`${process.env.TELEGRAM_URL}/sendMessage`, {
-//       chat_id: message.chat.id,
-//       text: "Polo!!",
-//     });
-//     console.log("Replied with Polo!!");
-//   } catch (err) {
-//     console.error("Error sending message:", err.message);
-//   }
-
-//   res.end("ok");
-// });
+axiosRetry(TelegramAxiosClient, {
+  retries: 3,
+  retryDelay: axiosRetry.exponentialDelay,
+  retryCondition: (error) => {
+    return (
+      axiosRetry.isNetworkOrIdempotentRequestError(error) ||
+      error.response?.status === 429
+    );
+  },
+});
 
 module.exports = [
   {
@@ -64,7 +57,7 @@ module.exports = [
         });
 
         try {
-          await axios.post(`${process.env.TELEGRAM_URL}/sendMessage`, {
+          await TelegramAxiosClient.post(`/sendMessage`, {
             chat_id: message.chat.id,
             text: "This is the bot and will send the reports here provide with the instruction set",
           });
@@ -73,7 +66,7 @@ module.exports = [
         }
       } else {
         try {
-          await axios.post(`${process.env.TELEGRAM_URL}/sendMessage`, {
+          await TelegramAxiosClient.post(`/sendMessage`, {
             chat_id: message.chat.id,
             text: "You are not a premium user of this service. Give the link to register",
           });
@@ -90,8 +83,49 @@ module.exports = [
     method: "post",
     route: "/webhook",
     fn: wrapAsync(async (req, res) => {
-      console.log(req.headers['content-type']);
-      console.log(req.body)
+      const response = await axios.post(
+        `https://api.openai.com/v1/chat/completions`,
+        {
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are an AI assistant, which helps on a platform which notifies it users on news about the trading market, your job is to explain every term in the message received",
+            },
+            { role: "user", content: `${req.body}` },
+          ],
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.OPENAI_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (response.data.choices[0].message.content) {
+        const new_report = new Report({
+          content: response.data.choices[0].message.content,
+        });
+
+        await new_report.save();
+
+        const Users = await User.find(
+          { chat_id: { $nin: [null, ""] } },
+          "chat_id"
+        );
+
+        Users.map(async (user) => {
+          try {
+            await TelegramAxiosClient.post(`/sendMessage`, {
+              chat_id: user.chat_id,
+              text: `${response.data.choices[0].message.content}`,
+            });
+          } catch (err) {
+            console.error("Error sending message:", err.message);
+          }
+        });
+      }
       res.end("ok");
     }),
     middlewares: [],

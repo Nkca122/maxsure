@@ -12,11 +12,11 @@ const userSchema = new Schema({
   },
   chat_id: {
     type: String,
-    default: "",
+    default: null,
   },
   telegram_username: {
     type: String,
-    default: "",
+    default: null,
   },
 });
 

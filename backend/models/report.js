@@ -1,7 +1,16 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const reportSchema = new Schema({});
+const reportSchema = new Schema(
+  {
+    content: {
+      type: String,
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-export const report = mongoose.Model("Report", reportSchema);
-
+module.exports = mongoose.model("Report", reportSchema);
