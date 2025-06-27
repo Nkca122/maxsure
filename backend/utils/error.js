@@ -1,7 +1,7 @@
 class ExpressError extends Error {
-  constructor(code = 500, display = "Internal Server Error") {
+  constructor(status = 500, display = "Internal Server Error") {
     super();
-    this.code = code;
+    this.status = status;
     this.display = display;
   }
 }

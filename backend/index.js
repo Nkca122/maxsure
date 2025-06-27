@@ -3,14 +3,22 @@ const mongoose = require("mongoose");
 const passport = require("passport");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const ExpressError = require("./utils/error")
-const axios = require("axios")
+const ExpressError = require("./utils/error");
+const axios = require("axios");
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+const ENV = process.env.ENV;
+let corsOptions = {
+  origin: ENV != "production" ? "*" : `${process.env.CLIENT}`,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
-app.use(express.text({ type: 'text/plain' }));
+app.use(express.text({ type: "text/plain" }));
 
 // Passport config
 require("./config/passport")(passport);
@@ -18,25 +26,27 @@ app.use(passport.initialize());
 
 // Routes
 app.use("/auth", require("./routes/auth"));
-app.use("/bot", require("./routes/bot"))
+app.use("/bot", require("./routes/bot"));
+app.use("/dashboard", require("./routes/dashboard"))
 
 // Protected route
-const authenticateJwt = require("./middlewares/authMiddleware");
-app.get("/protected", authenticateJwt, (req, res) => {
-  res.json({ message: "You are authorized", user: req.user });
-});
+
 app.use((req, res, next) => {
   return next(new ExpressError(404, "Route not found"));
 });
 
 app.use((err, req, res, next) => {
   if (err) {
-    console.log(err)
-    const log_err = new ExpressError(err.code ? err.code : 500, err.display || "Internal Server Error")
+    const log_err = new ExpressError(
+      err.status ? err.status : 500,
+      err.display || "Internal Server Error"
+    );
+
     console.log(log_err);
-    return res.status(log_err.code).json({
+
+    return res.status(log_err.status).json({
       msg: log_err.display,
-      redirectTo: "/"
+      redirectTo: "/",
     });
   }
 });

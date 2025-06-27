@@ -1,10 +1,8 @@
-const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const Report = require("../models/report");
 const wrapAsync = require("../utils/wrapper");
-const jwt = require("jsonwebtoken");
 const authMiddleware = require("../middlewares/authMiddleware");
-const {default: axiosRetry} = require("axios-retry");
+const { default: axiosRetry } = require("axios-retry");
 const axios = require("axios");
 require("dotenv").config();
 
@@ -33,7 +31,7 @@ module.exports = [
       await User.findByIdAndUpdate(req.user, {
         telegram_username: username,
       });
-      res.status(200).json({
+      return res.status(200).json({
         msg: "Username updated",
       });
     }),
@@ -46,7 +44,6 @@ module.exports = [
     route: "/new-message",
     fn: wrapAsync(async (req, res) => {
       const { message } = req.body;
-      console.log(message);
       const existingPremiumUser = await User.findOne({
         telegram_username: message.chat.username,
       });
@@ -59,7 +56,8 @@ module.exports = [
         try {
           await TelegramAxiosClient.post(`/sendMessage`, {
             chat_id: message.chat.id,
-            text: "This is the bot and will send the reports here provide with the instruction set",
+            text: `${process.env.PREMIUM_USER}`,
+            parse_mode: "HTML",
           });
         } catch (err) {
           console.error("Error sending message:", err.message);
@@ -68,14 +66,15 @@ module.exports = [
         try {
           await TelegramAxiosClient.post(`/sendMessage`, {
             chat_id: message.chat.id,
-            text: "You are not a premium user of this service. Give the link to register",
+            text: `${process.env.REGISTER_USER}`,
+            parse_mode: "HTML",
           });
         } catch (err) {
           console.error("Error sending message:", err.message);
         }
       }
 
-      res.end("ok");
+      return res.end("ok");
     }),
     middlewares: [],
   },
@@ -90,8 +89,7 @@ module.exports = [
           messages: [
             {
               role: "system",
-              content:
-                "You are an AI assistant, which helps on a platform which notifies it users on news about the trading market, your job is to explain every term in the message received",
+              content: `${process.env.ASSISTANT_PROMPT}`,
             },
             { role: "user", content: `${req.body}` },
           ],
@@ -126,7 +124,7 @@ module.exports = [
           }
         });
       }
-      res.end("ok");
+      return res.end("ok");
     }),
     middlewares: [],
   },

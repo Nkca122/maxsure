@@ -43,9 +43,12 @@ let menu_links = [
 export default function Header() {
   return (
     <>
-      <div className="absolute top-0 w-full flex items-center justify-between px-2 py-2">
-        <div className="h-[120px] w-[120px] flex justify-center items-center">
+      <div className="absolute top-0 w-full flex items-center justify-between px-2 py-2 z-10">
+        <div className="h-[62px] flex justify-center items-center gap-2">
           <img src="/assets/logo.png" alt="Logo" className="h-full aspect-square"/>
+          <h1 className="text-blue-500 font-bold text-xl">
+            Algo<span className="text-white">Brief</span>
+          </h1>
         </div>
         <NavigationMenu>
           <NavigationMenuList className="w-full hidden md:flex">
