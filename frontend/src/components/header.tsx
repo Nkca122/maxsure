@@ -21,24 +21,14 @@ let menu_links = [
   },
 
   {
-    display: "Explore",
-    to: "/explore",
-  },
-
-  {
-    display: "Categories",
-    to: "/categories",
-  },
-
-  {
     display: "Courses",
     to: "/courses",
   },
 
   {
-    display: "About",
-    to: "/about",
-  },
+    display: 'Register',
+    to: "/register"
+  }
 ];
 export default function Header() {
   return (
