@@ -19,7 +19,22 @@ module.exports = [
         .skip(page * limit)
         .limit(limit);
 
-      res.status(200).json(reports);
+      const count = await Report.countDocuments();
+      res.status(200).json({
+        reports: reports,
+        totalPages: Math.ceil(count / parseInt(process.env.REPORTS_PER_PAGE)),
+      });
+    }),
+    middlewares: [authMiddleware],
+  },
+  {
+    method: "post",
+    route: "/user",
+    fn: wrapAsync(async (req, res) => {
+      const user = await User.findById(req.user);
+      return res.status(200).json({
+        username: user.telegram_username,
+      });
     }),
     middlewares: [authMiddleware],
   },

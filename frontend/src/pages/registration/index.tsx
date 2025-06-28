@@ -1,6 +1,7 @@
-"use client";
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
+import { Helmet } from "react-helmet";
+import { Separator } from "@/components/ui/separator";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -16,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeClosed } from "lucide-react";
 
@@ -113,24 +114,24 @@ export default function Registration() {
 
   return (
     <>
+      <Helmet>
+        <title>Algo-Brief | Register</title>
+      </Helmet>
       <section className="w-full h-screen flex justify-center items-center">
-        <div className="flex flex-col  w-full justify-center items-center gap-2 md:flex-row md:w-[80vw]">
+        <div className="flex flex-col-reverse w-full justify-center items-center gap-2 md:flex-row md:w-[80vw] bg-slate-900 px-4 py-4 rounded-2xl border-2">
           <div className="w-full">
             <Tabs
               defaultValue={method}
               onValueChange={(e) => {
                 setActiveTab(e);
               }}
+              value={activeTab}
             >
-              <TabsList>
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="signup">Sign up</TabsTrigger>
-              </TabsList>
-              <TabsContent value="login">
+              <TabsContent value="login" className="px-2 py-2">
                 <Form {...loginForm}>
                   <form
                     onSubmit={loginForm.handleSubmit(loginSubmitfn)}
-                    className="space-y-8"
+                    className="space-y-4"
                     autoComplete="off"
                     autoFocus={false}
                     autoCapitalize="off"
@@ -184,16 +185,32 @@ export default function Registration() {
                         </FormItem>
                       )}
                     />
-
-                    <Button type="submit">Submit</Button>
+                    <div className="w-full flex justify-start items-center">
+                      <Button
+                        type="submit"
+                        className="font-semibold text-xs text-foreground hover:text-background bg-slate-950 px-8"
+                      >
+                        Submit
+                      </Button>
+                    </div>
                   </form>
                 </Form>
+                <Separator orientation="horizontal" className="my-2" />
+                <Button
+                  variant={"link"}
+                  className="text-blue-500"
+                  onClick={() => {
+                    setActiveTab("signup");
+                  }}
+                >
+                  Create an account ?
+                </Button>
               </TabsContent>
-              <TabsContent value="signup">
+              <TabsContent value="signup" className="px-2 py-2">
                 <Form {...signupForm}>
                   <form
                     onSubmit={signupForm.handleSubmit(signupSubmitfn)}
-                    className="space-y-8"
+                    className="space-y-4"
                     autoComplete="off"
                     autoFocus={false}
                     autoCapitalize="off"
@@ -265,20 +282,57 @@ export default function Registration() {
                         </FormItem>
                       )}
                     />
-                    <Button type="submit">Submit</Button>
+                    <div className="w-full flex justify-start items-center">
+                      <Button
+                        type="submit"
+                        className="font-semibold text-xs text-foreground hover:text-background bg-slate-950 px-8"
+                      >
+                        Submit
+                      </Button>
+                    </div>
                   </form>
                 </Form>
+                <Separator orientation="horizontal" className="my-2" />
+                <Button
+                  variant={"link"}
+                  className="text-blue-500"
+                  onClick={() => {
+                    setActiveTab("login");
+                  }}
+                >
+                  Already have an account ?
+                </Button>
               </TabsContent>
             </Tabs>
           </div>
-
           <div className="w-full">
             <Tabs defaultValue={method} value={activeTab}>
               <TabsContent value="login">
-                Make changes to your account here.
+                <div className="flex flex-col justify-center items-start gap-4">
+                  <h1 className="text-4xl font-bold inline-block">
+                    Welcome <span className="text-blue-500">Back!</span>
+                  </h1>
+                  <p className="text-muted-foreground text-sm leading-none text-start">
+                    to Algobrief! Log in to access your personalized insights
+                    and stay ahead in the market with AI-driven trading
+                    intelligence.
+                  </p>
+                  <div className="w-full flex justify-center items-center">
+                    <img src="/assets/login.png" alt="" className="h-[155px]" />
+                  </div>
+                </div>
               </TabsContent>
               <TabsContent value="signup">
-                Change your password here.
+                <div className="flex flex-col justify-center items-start gap-4">
+                  <h1 className="text-4xl font-bold inline-block">Welcome</h1>
+                  <p className="text-muted-foreground text-sm leading-none text-start">
+                    to Algobrief! We’re excited to have you on board—get ready
+                    to trade smarter with the power of AI at your fingertips.
+                  </p>
+                  <div className="w-full flex justify-center items-center">
+                    <img src="/assets/signup.png" alt="" />
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
           </div>
