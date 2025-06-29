@@ -17,7 +17,7 @@ axiosRetry(TelegramAxiosClient, {
   retryCondition: (error) => {
     return (
       axiosRetry.isNetworkOrIdempotentRequestError(error) ||
-      error.response?.status === 429
+      error.response?.status === 400 || error.response?.status == 429
     );
   },
 });
