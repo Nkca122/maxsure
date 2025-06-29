@@ -27,7 +27,7 @@ app.use(passport.initialize());
 // Routes
 app.use("/auth", require("./routes/auth"));
 app.use("/bot", require("./routes/bot"));
-app.use("/dashboard", require("./routes/dashboard"))
+app.use("/dashboard", require("./routes/dashboard"));
 
 // Protected route
 

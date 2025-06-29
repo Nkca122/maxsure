@@ -3,12 +3,67 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 
-import { Brain, Clock, ChartNoAxesCombined, LogIn } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
+import { Brain, Clock, ChartNoAxesCombined, LogIn, X } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const location = useLocation();
+  let [state, setState] = useState<any>(null);
+
+  useEffect(() => {
+    setState(location.state);
+  }, []);
+
   return (
     <>
+      <AlertDialog
+        open={!!state}
+        onOpenChange={(open) => {
+          !open && setState(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              <div className="w-full flex justify-between px-2 items-center">
+                <h1 className="text-2xl font-extrabold">
+                  Status <span className="text-blue-500">{state?.status}</span>
+                </h1>
+              </div>
+            </AlertDialogTitle>
+          </AlertDialogHeader>
+
+          <AlertDialogDescription className="px-2">
+            <div className="w-full">
+              <p className="text-sm font-bold">
+                {state?.message}
+              </p>
+            </div>
+          </AlertDialogDescription>
+
+            <AlertDialogFooter>
+              <Badge
+                variant={"destructive"}
+                onClick={() => {
+                  setState(null);
+                }}
+                className="h-[40px] aspect-square"
+              >
+                <X />
+              </Badge>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <section className="w-screen h-screen flex flex-col justify-center items-center gap-3 border-b-2">
         <div className="w-full h-full flex flex-col-reverse md:flex-row justify-center items-center bg-[#00000090]">
           <div className="w-full h-full overflow-hidden flex justify-center items-center">

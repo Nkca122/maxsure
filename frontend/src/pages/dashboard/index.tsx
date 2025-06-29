@@ -21,11 +21,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 import { Input } from "@/components/ui/input";
 import axios from "axios";
@@ -33,8 +29,20 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import SkeletonCard from "@/components/skeleton_card";
 import { Settings } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
+
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type Report = {
   _id: string;
@@ -53,13 +61,19 @@ const formSchema = z.object({
     }),
 });
 
+type Error = {
+  message: String;
+  [key: string]: any;
+};
+
 export default function Dashboard() {
   let [currentPage, setCurrentPage] = useState(0);
   let [reports, setReports] = useState<Report[]>([]);
   let [totalPages, setTotalPages] = useState(0);
   let [loading, setLoading] = useState(false);
 
-  let [user, setUser] = useState("");
+  let [user, setUser] = useState<any>(null);
+  let [msg, setMsg] = useState<any | Error>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -110,15 +124,17 @@ export default function Dashboard() {
 
     fetchData();
   }, [currentPage]);
+
   const Navigate = useNavigate();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    setUser(values.username);
     try {
       const token = localStorage.getItem("token");
-      await axios.post(
+      const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/bot/telegram_user`,
         {
           username: values.username,
@@ -129,14 +145,52 @@ export default function Dashboard() {
           },
         }
       );
+
+      setMsg(response?.data?.msg);
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        Navigate(err.response?.data?.redirectTo);
+        console.log(err);
+        Navigate(err.response?.data?.redirectTo || "/", {
+          state: {
+            message: err?.response?.data?.msg || "Internal Server Error",
+            status: err?.status || 500
+          },
+        });
       }
     }
   }
+
   return (
     <>
+      <AlertDialog
+        open={!!msg}
+        onOpenChange={(open) => {
+          !open && setMsg(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              <h1 className="text-3xl font-extrabold">
+                Username <span className="text-blue-500">Updated</span>
+              </h1>
+            </AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogDescription>{msg}</AlertDialogDescription>
+          <AlertDialogFooter>
+            <Badge
+              variant={"destructive"}
+              onClick={() => {
+                setMsg(null);
+              }}
+              className="h-[40px] aspect-square"
+            >
+              <X />
+            </Badge>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <section
         className="h-screen w-screen bg-center bg-cover bg-no-repeat relative"
         style={{
@@ -154,6 +208,12 @@ export default function Dashboard() {
                 </div>
               </DialogTrigger>
               <DialogContent>
+                <h1>
+                  Currently Registered as{" "}
+                  <span>
+                    {user ? user : <Skeleton className="h-[1ch] w-full" />}
+                  </span>
+                </h1>
                 <Form {...form}>
                   <form
                     onSubmit={form.handleSubmit(onSubmit)}
@@ -183,7 +243,6 @@ export default function Dashboard() {
                           <FormControl>
                             <Input
                               placeholder="Your Telegram Username"
-                              defaultValue={user}
                               {...field}
                             />
                           </FormControl>
@@ -215,7 +274,7 @@ export default function Dashboard() {
                     <CardHeader className="font-bold">
                       {new Date(Date.parse(report.createdAt)).toUTCString()}
                     </CardHeader>
-                    <CardContent className="h-full overflow-scroll">
+                    <CardContent className="h-full overflow-scroll scrollbar-thin">
                       <p>{report.content}</p>
                     </CardContent>
                   </Card>

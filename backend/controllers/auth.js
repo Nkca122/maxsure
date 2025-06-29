@@ -13,7 +13,7 @@ module.exports = [
       const existingUser = await User.findOne({ email });
       if (existingUser)
         return res.status(409).json({
-          msg: "User already exists",
+          msg: "An account with this email already exists. Please log in or use a different email to sign up. ",
         });
 
       const hash = await bcrypt.hash(password, 10);
@@ -41,12 +41,12 @@ module.exports = [
 
       if (!user)
         return res.status(400).json({
-          msg: "Invalid credentials",
+          msg: "Please check your email and password and try again.",
         });
 
       if (!(await bcrypt.compare(password, user.password)))
         return res.status(400).json({
-          msg: "Invalid credentials",
+          msg: "Please check your email and password and try again.",
         });
 
       res.status(200).json({

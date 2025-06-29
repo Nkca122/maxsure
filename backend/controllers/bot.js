@@ -32,7 +32,7 @@ module.exports = [
         telegram_username: username,
       });
       return res.status(200).json({
-        msg: "Username updated",
+        msg: "Your Telegram Username has been updated. Please Scan the QR code below & initiate a chat",
       });
     }),
 

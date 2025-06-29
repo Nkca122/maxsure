@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { Separator } from "@/components/ui/separator";
@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { Badge } from "@/components/ui/badge";
 import {
   Form,
   FormControl,
@@ -14,12 +15,22 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeClosed } from "lucide-react";
+import { Eye, EyeClosed, X } from "lucide-react";
 
 import axios from "axios";
 
@@ -57,6 +68,8 @@ export default function Registration() {
   const [activeTab, setActiveTab] = useState(method);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
+  let [err, setErr] = useState<any>(null);
+
   const signupForm = useForm<z.infer<typeof signupFormSchema>>({
     resolver: zodResolver(signupFormSchema),
     defaultValues: {
@@ -76,9 +89,15 @@ export default function Registration() {
         }
       );
 
-      if (response.status == 201) Navigate(response.data.redirectTo);
+      if (response.status == 201)
+        Navigate(response.data.redirectTo, {
+          state: {
+            status: "Success",
+            message: "Your User has been created Succesfully",
+          },
+        });
     } catch (err) {
-      console.log(err);
+      setErr(err);
     }
   };
 
@@ -108,9 +127,13 @@ export default function Registration() {
         Navigate(redirectTo);
       }
     } catch (err) {
-      console.log(err);
+      setErr(err);
     }
   };
+
+  useEffect(() => {
+    console.log(err);
+  }, [err]);
 
   return (
     <>
@@ -118,6 +141,44 @@ export default function Registration() {
         <title>Algo-Brief | Register</title>
       </Helmet>
       <section className="w-full h-screen flex justify-center items-center">
+        <AlertDialog
+          open={!!err}
+          onOpenChange={(open) => !open && setErr(null)}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                <div className="w-full flex justify-between px-2 items-center">
+                  <h1 className="text-2xl font-extrabold">
+                    Error Code{" "}
+                    <span className="text-blue-500">{err?.status || 500}</span>
+                  </h1>
+                </div>
+              </AlertDialogTitle>
+            </AlertDialogHeader>
+
+            <AlertDialogDescription className="px-2">
+              <div className="w-full">
+                <p className="text-sm font-bold">
+                  {err?.response?.data?.msg ||
+                    "Internal Server Error. Please Try again later"}
+                </p>
+              </div>
+            </AlertDialogDescription>
+
+            <AlertDialogFooter>
+              <Badge
+                variant={"destructive"}
+                onClick={() => {
+                  setErr(null);
+                }}
+                className="h-[40px] aspect-square"
+              >
+                <X />
+              </Badge>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         <div className="flex flex-col-reverse w-full justify-center items-center gap-2 md:flex-row md:w-[80vw] bg-slate-900 px-4 py-4 rounded-2xl border-2">
           <div className="w-full">
             <Tabs
@@ -312,7 +373,7 @@ export default function Registration() {
                   <h1 className="text-4xl font-bold inline-block">
                     Welcome <span className="text-blue-500">Back!</span>
                   </h1>
-                  <p className="text-muted-foreground text-sm leading-none text-start">
+                  <p className="text-muted-foreground text-sm text-start">
                     to Algobrief! Log in to access your personalized insights
                     and stay ahead in the market with AI-driven trading
                     intelligence.
@@ -325,7 +386,7 @@ export default function Registration() {
               <TabsContent value="signup">
                 <div className="flex flex-col justify-center items-start gap-4">
                   <h1 className="text-4xl font-bold inline-block">Welcome</h1>
-                  <p className="text-muted-foreground text-sm leading-none text-start">
+                  <p className="text-muted-foreground text-sm text-start">
                     to Algobrief! We’re excited to have you on board—get ready
                     to trade smarter with the power of AI at your fingertips.
                   </p>
