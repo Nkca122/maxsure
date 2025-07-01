@@ -98,7 +98,7 @@ Ensure the following are installed:
    MONGO_URI= <YOUR_MONGODB_CONNECTION_STRING>
    JWT_SECRET= <YOUR_JWT_SECRET>
    TELEGRAM_URL= https://api.telegram.org/bot<YOUR_TELEGRAM_BOT_TOKEN>
-   
+
    OPENAI_TOKEN= <YOUR_OPENAI_API_TOKEN>
 
    PREMIUM_USER= "Welcome! To Algo brief" #Message sent by bot when user is registered
@@ -113,8 +113,30 @@ Ensure the following are installed:
 
    ENV= development # Change it to PRODUCTION in production and add a key CLIENT= with the value consisting of the url to the client/frontend
    ```
+5. **Setup the webhooks:**
+    > **NOTE:** The webhook to receive the market updates should provide data in the data format **text/plain**
 
-4. **Start the backend:**
+   ```bash
+   ngrok http 3000
+   ```
+    > Copy the link for `forwarding` & Run the command below
+
+    ```bash
+    curl -F "url=<FORWARDING_LINK>/bot/new-message" https://api.telegram.org/bot<YOUR_TELEGRAM_BOT_TOKEN>/setWebhook
+    ```
+
+    untill 
+    ```bash
+    {
+        "ok":true,
+        "result":true,
+        ...
+    }
+    ```
+
+
+
+5. **Start the backend:**
 
    ```bash
    cd backend
@@ -122,7 +144,7 @@ Ensure the following are installed:
 
    ```
 
-5. **Start the Client:**
+6. **Start the Client:**
 
    ```bash
    cd frontend
